@@ -1,5 +1,6 @@
 import Mock from 'mockjs'
 import loginAPI from './login'
+import roles from './roles'
 
 // 修复在使用 MockJS 情况下，设置 withCredentials = true，且未被拦截的跨域请求丢失 Cookies 的问题
 // https://github.com/nuysoft/Mock/issues/300
@@ -19,6 +20,7 @@ Mock.XHR.prototype.send = function() {
 Mock.mock(/\/login\/login/, 'post', loginAPI.loginByUsername)
 Mock.mock(/\/login\/logout/, 'post', loginAPI.logout)
 Mock.mock(/\/user\/info\.*/, 'get', loginAPI.getUserInfo)
+Mock.mock(/\/rolesMap/, 'get', roles.getRoleMap)
 
 // 文章相关
 // Mock.mock(/\/article\/list/, 'get', articleAPI.getList)

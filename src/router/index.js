@@ -32,11 +32,6 @@ export const constantRouterMap = [
     hidden: true
   },
   {
-    path: '/auth-redirect',
-    component: () => import('@/views/login/authredirect'),
-    hidden: true
-  },
-  {
     path: '/404',
     component: () => import('@/views/errorPage/404'),
     hidden: true
@@ -67,13 +62,14 @@ export default new Router({
   routes: constantRouterMap
 })
 
+// 权限设置不在这里设置，这里只是表示路由渲染，
 export const asyncRouterMap = [
 
   {
     path: '/permission',
     component: Layout,
     meta: {
-      title: 'permission',
+      title: '权限',
       icon: 'example',
       roles: ['admin123', 'editor']
     },

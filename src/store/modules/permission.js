@@ -1,5 +1,5 @@
 import { asyncRouterMap, constantRouterMap } from '@/router'
-
+import { getRolesMap } from '@/api/auth'
 /**
  * 通过meta.role判断是否与当前用户权限匹配
  * @param roles
@@ -34,26 +34,62 @@ function filterAsyncRouter(routes, roles) {
   return res
 }
 
+/**
+ * 递归把 后端权限map 和前端渲染map
+ * @param target  前端渲染map
+ * @param source  后端权限map
+ */
+
+function extend(target, source) {
+  if (obj === 'children') {
+    target['children'] = extend(target['children'], source['children'])
+  } else {
+    for (var obj in source['meta']) {
+      target['meta'][obj] = source['meta'][obj]
+    }
+  }
+  return target
+}
+
 const permission = {
   state: {
     routers: constantRouterMap,
+    asyncRouters: [],
     addRouters: []
   },
   mutations: {
     SET_ROUTERS: (state, routers) => {
       state.addRouters = routers
       state.routers = constantRouterMap.concat(routers)
+    },
+    GET_ADDROUTERS: (state, routers) => {
+      state.asyncRouters = routers
     }
   },
   actions: {
-    GenerateRoutes({ commit }, data) {
+    asyncRouterMap({ commit }) {
+      return new Promise((resolve, reject) => {
+        getRolesMap().then(resp => {
+          if (!resp.data) {
+            reject('error')
+          }
+          const data = JSON.parse(resp.data)
+          const asyncRoute = extend(asyncRouterMap, data)
+          commit('GET_ADDROUTERS', asyncRoute)
+          resolve(resp)
+        }).catch(error => {
+          reject(error)
+        })
+      })
+    },
+    GenerateRoutes({ state, commit }, data) {
       return new Promise(resolve => {
         const { roles } = data
         let accessedRouters
         if (roles.includes('admin')) {
-          accessedRouters = asyncRouterMap
+          accessedRouters = state.asyncRouters
         } else {
-          accessedRouters = filterAsyncRouter(asyncRouterMap, roles)
+          accessedRouters = filterAsyncRouter(state.asyncRouters, roles)
         }
         commit('SET_ROUTERS', accessedRouters)
         resolve()

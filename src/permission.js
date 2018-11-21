@@ -9,15 +9,16 @@ NProgress.configure({ showSpinner: false })// NProgress Configuration
 
 // permission judge function
 function hasPermission(roles, permissionRoles) {
-  if (roles.indexOf('admin') >= 0) return true // admin permission passed directly
+  if (roles.indexOf('admin') >= 0) return true // admin permission passed directly 这里需要详细配置一下
   if (!permissionRoles) return true
   return roles.some(role => permissionRoles.indexOf(role) >= 0)
 }
 
-const whiteList = ['/login', '/auth-redirect']// no redirect whitelist
+const whiteList = ['/login']// no redirect whitelist
 
 router.beforeEach((to, from, next) => {
   NProgress.start() // start progress bar
+  store.dispatch('asyncRouterMap') //  获取路由权限配置
   if (getToken()) { // determine if there has token
     /* has token*/
     if (to.path === '/login') {
@@ -38,13 +39,11 @@ router.beforeEach((to, from, next) => {
           })
         })
       } else {
-        // 没有动态改变权限的需求可直接next() 删除下方权限判断 ↓
         if (hasPermission(store.getters.roles, to.meta.roles)) {
           next()
         } else {
           next({ path: '/401', replace: true, query: { noGoBack: true }})
         }
-        // 可删 ↑
       }
     }
   } else {
